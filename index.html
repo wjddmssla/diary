@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>온라인 교육 일정 및 문자 발송 관리 스케줄러</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .completed-task {
+            text-decoration: line-through;
+            opacity: 0.6;
+            background-color: #f3f4f6 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <!-- 헤더 영역 -->
+    <header class="bg-indigo-600 text-white shadow-md py-6 px-8 mb-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">📚 온라인 교육 문자 스케줄 통합 관리</h1>
+                <p class="text-indigo-200 text-sm mt-1">한 달에 두 번 개강하는 복잡한 기수별 일정을 한눈에 파악하고 효율적으로 관리하세요.</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex gap-2">
+                <button onclick="openModal()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-50 transition">
+                    + 새 일정 추가하기
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="max-w-7xl mx-auto px-4 pb-12">
+        
+        <!-- 상단 통계 / 필터 요약 바 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">이번 달 총 일정</p>
+                    <h3 id="total-count" class="text-xl font-bold text-gray-700">0건</h3>
+                </div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">📅</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">발송 완료</p>
+                    <h3 id="completed-count" class="text-xl font-bold text-green-600">0건</h3>
+                </div>
+                <div class="p-3 bg-green-50 text-green-600 rounded-lg">✅</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">발송 대기</p>
+                    <h3 id="pending-count" class="text-xl font-bold text-orange-500">0건</h3>
+                </div>
+                <div class="p-3 bg-orange-50 text-orange-500 rounded-lg">⏳</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">현재 선택 월</p>
+                    <h3 id="current-month-label" class="text-xl font-bold text-indigo-600">2026년 10월</h3>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">🗓️</div>
+            </div>
+        </div>
+
+        <!-- 캘린더 컨트롤 바 -->
+        <div class="bg-white p-4 rounded-t-xl shadow-sm border-x border-t border-gray-200 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <button onclick="changeMonth(-1)" class="p-2 border rounded-lg hover:bg-gray-100">◀ 이전 달</button>
+                <h2 id="calendar-title" class="text-lg font-bold px-2">2026년 10월</h2>
+                <button onclick="changeMonth(1)" class="p-2 border rounded-lg hover:bg-gray-100">다음 달 ▶</button>
+            </div>
+            <div class="text-sm text-gray-500">
+                💡 팁: 일정을 클릭하면 <span class="text-green-600 font-semibold">발송 완료(취소선)</span> 처리가 됩니다.
+            </div>
+        </div>
+
+        <!-- 캘린더 그리드 뷰 -->
+        <div class="bg-white rounded-b-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+            <!-- 요일 헤더 -->
+            <div class="grid grid-cols-7 bg-gray-100 text-center font-semibold text-gray-600 text-sm border-b border-gray-200">
+                <div class="py-3 text-red-500">일</div>
+                <div class="py-3">월</div>
+                <div class="py-3">화</div>
+                <div class="py-3">수</div>
+                <div class="py-3">목</div>
+                <div class="py-3">금</div>
+                <div class="py-3 text-blue-500">토</div>
+            </div>
+            <!-- 날짜 셀 영역 -->
+            <div id="calendar-grid" class="grid grid-cols-7 auto-rows-fr bg-gray-200 gap-px">
+                <!-- 자바스크립트로 동적 생성됨 -->
+            </div>
+        </div>
+
+        <!-- 하단: 전체 일정 리스트 및 상세 관리 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">📋 등록된 전체 문자 스케줄 목록</h3>
+                <span class="text-xs text-gray-400">수정 또는 삭제가 가능합니다.</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b bg-gray-50 text-gray-600 text-sm">
+                            <th class="py-3 px-4">날짜</th>
+                            <th class="py-3 px-4">구분 / 유형</th>
+                            <th class="py-3 px-4">통일된 문자 내용</th>
+                            <th class="py-3 px-4 text-center">발송 상태</th>
+                            <th class="py-3 px-4 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-table-body" class="divide-y divide-gray-100 text-sm">
+                        <!-- 동적 데이터 삽입 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- 일정 추가/수정 모달 -->
+    <div id="schedule-modal" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative">
+            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800">새 문자 스케줄 등록</h3>
+            <form id="schedule-form" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="edit-index" value="">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">날짜 선택</label>
+                    <input type="date" id="schedule-date" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">문자 유형</label>
+                    <select id="schedule-type" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="개강">개강 문자</option>
+                        <option value="강의시작">강의시작</option>
+                        <option value="강의독려">강의독려</option>
+                        <option value="과제">과제 안내</option>
+                        <option value="시험">시험 안내</option>
+                        <option value="토론">토론 안내</option>
+                        <option value="복습시험">복습시험</option>
+                        <option value="강의마감">강의마감</option>
+                        <option value="교강사출석">교강사 출석문자</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">문구 내용 (예: N-N기수 N주차 시작)</label>
+                    <input type="text" id="schedule-content" placeholder="예: 2-3기수 2주차 시작" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">취소</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 자바스크립트 로직 -->
+    <script>
+        // 초기 데이터 (10월 스케줄 예시 반영)
+        let schedules = [
+            { id: 1, date: '2026-10-07', type: '개강', content: '2-2기수 개강 문자', completed: true },
+            { id: 2, date: '2026-10-07', type: '강의시작', content: '2-3기수 강의시작', completed: true },
+            { id: 3, date: '2026-10-07', type: '과제', content: '2-4기수 과제 안내', completed: false },
+            { id: 4, date: '2026-10-08', type: '강의독려', content: '2-3기수 강의독려', completed: false },
+            { id: 5, date: '2026-10-08', type: '시험', content: '2-10기수 시험 안내', completed: false },
+            { id: 6, date: '2026-10-14', type: '개강', content: '2-11기수 개강 문자', completed: false },
+            { id: 7, date: '2026-10-16', type: '강의마감', content: '2-3기수 강의마감', completed: false },
+            { id: 8, date: '2026-10-22', type: '복습시험', content: '2-7기수 복습시험 안내', completed: false }
+        ];
+
+        let currentYear = 2026;
+        let currentMonth = 9; // 0: 1월, 9: 10월
+
+        function init() {
+            renderCalendar();
+            renderTable();
+            updateStats();
+        }
+
+        function changeMonth(direction) {
+            currentMonth += direction;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+            updateStats();
+        }
+
+        // 캘린더 렌더링 함수
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            const title = document.getElementById('calendar-title');
+            const monthLabel = document.getElementById('current-month-label');
+            title.innerText = `${currentYear}년 ${currentMonth + 1}월`;
+            monthLabel.innerText = `${currentYear}년 ${currentMonth + 1}월`;
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            // 이전 달 여백 채우기
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'bg-gray-50 min-h-[120px] p-2 opacity-40';
+                grid.appendChild(emptyCell);
+            }
+
+            // 이번 달 날짜 채우기
+            for (let day = 1; day <= lastDay; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cell = document.createElement('div');
+                cell.className = 'bg-white min-h-[120px] p-2 flex flex-col justify-between overflow-y-auto';
+
+                // 날짜 숫자 라벨
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'text-xs font-bold text-gray-500 mb-1 flex justify-between';
+                dayHeader.innerHTML = `<span>${day}일</span>`;
+                cell.appendChild(dayHeader);
+
+                // 해당 날짜의 스케줄 필터링
+                const daySchedules = schedules.filter(s => s.date === dateStr);
+                const listContainer = document.createElement('div');
+                listContainer.className = 'space-y-1 flex-1';
+
+                daySchedules.forEach(item => {
+                    const badge = document.createElement('div');
+                    let badgeColor = 'bg-indigo-100 text-indigo-700';
+                    if (item.type === '개강') badgeColor = 'bg-pink-100 text-pink-700';
+                    if (item.type === '마감' || item.type === '강의마감') badgeColor = 'bg-red-100 text-red-700';
+                    if (item.type === '시험' || item.type === '복습시험') badgeColor = 'bg-amber-100 text-amber-700';
+
+                    badge.className = `text-[11px] px-1.5 py-0.5 rounded font-medium cursor-pointer truncate transition hover:opacity-80 ${badgeColor} ${item.completed ? 'completed-task' : ''}`;
+                    badge.title = `${item.type}: ${item.content} (클릭 시 완료상태 토글)`;
+                    badge.innerText = `[${item.type}] ${item.content}`;
+                    
+                    // 뱃지 클릭 시 발송 완료 상태 토글
+                    badge.onclick = (e) => {
+                        e.stopPropagation();
+                        toggleComplete(item.id);
+                    };
+
+                    listContainer.appendChild(badge);
+                });
+
+                cell.appendChild(listContainer);
+                grid.appendChild(cell);
+            }
+        }
+
+        // 전체 리스트 테이블 렌더링
+        function renderTable() {
+            const tbody = document.getElementById('schedule-table-body');
+            tbody.innerHTML = '';
+
+            // 날짜순 정렬
+            const sortedSchedules = [...schedules].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedSchedules.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-gray-50 transition ${item.completed ? 'bg-gray-50 opacity-60' : ''}`;
+                
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-medium text-gray-700">${item.date}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded-full bg-indigo-50 text-indigo-600 font-semibold">${item.type}</span></td>
+                    <td class="py-3 px-4 ${item.completed ? 'line-through text-gray-400' : 'text-gray-800'}">${item.content}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="toggleComplete(${item.id})" class="px-2.5 py-1 text-xs rounded-lg font-semibold ${item.completed ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
+                            ${item.completed ? '발송완료 ✅' : '발송대기 ⏳'}
+                        </button>
+                    </td>
+                    <td class="py-3 px-4 text-center space-x-2">
+                        <button onclick="openEditModal(${item.id})" class="text-blue-600 hover:underline text-xs font-semibold">수정</button>
+                        <button onclick="deleteSchedule(${item.id})" class="text-red-500 hover:underline text-xs font-semibold">삭제</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const total = schedules.length;
+            const completed = schedules.filter(s => s.completed).length;
+            const pending = total - completed;
+
+            document.getElementById('total-count').innerText = `${total}건`;
+            document.getElementById('completed-count').innerText = `${completed}건`;
+            document.getElementById('pending-count').innerText = `${pending}건`;
+        }
+
+        // 발송 상태 토글
+        function toggleComplete(id) {
+            const item = schedules.find(s => s.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                renderCalendar();
+                renderTable();
+                updateStats();
+            }
+        }
+
+        // 모달 열기 (추가 모드)
+        function openModal() {
+            document.getElementById('modal-title').innerText = '새 문자 스케줄 등록';
+            document.getElementById('edit-index').value = '';
+            document.getElementById('schedule-date').value = '';
+            document.getElementById('schedule-content').value = '';
+            document.getElementById('schedule-modal').classList.remove('hidden');
+        }
+
+        // 모달 열기 (수정 모드)
+        function openEditModal(id) {
+            const item = schedules.find(s => s.id === id);
+            if (item) {
+                document.getElementById('modal-title').innerText = '스케줄 수정하기';
+                document.getElementById('edit-index').value = item.id;
+                document.getElementById('schedule-date').value = item.date;
+                document.getElementById('schedule-type').value = item.type;
+                document.getElementById('schedule-content').value = item.content;
+                document.getElementById('schedule-modal').classList.remove('hidden');
+            }
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('schedule-modal').classList.add('hidden');
+        }
+
+        // 폼 제출 처리 (추가 및 수정 통합)
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const editId = document.getElementById('edit-index').value;
+            const date = document.getElementById('schedule-date').value;
+            const type = document.getElementById('schedule-type').value;
+            const content = document.getElementById('schedule-content').value;
+
+            if (editId) {
+                // 수정
+                const item = schedules.find(s => s.id == editId);
+                if (item) {
+                    item.date = date;
+                    item.type = type;
+                    item.content = content;
+                }
+            } else {
+                // 추가
+                const newId = schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1;
+                schedules.push({
+                    id: newId,
+                    date,
+                    type,
+                    content,
+                    completed: false
+                });
+            }
+
+            closeModal();
+            renderCalendar();
+            renderTable();
+            updateStats();
+        }
+
+        // 삭제 처리
+        function deleteSchedule(id) {
+            if (confirm('정말 이 일정을 삭제하시겠습니까?')) {
+                schedules = schedules.filter(s => s.id !== id);
+                renderCalendar();
+                renderTable();
+                updateStats();
+            }
+        }
+
+        // 실행
+        init();
+    </script>
+</body>
+</html>
