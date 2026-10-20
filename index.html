@@ -7,6 +7,8 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <!-- SheetJS (Excel Read Library) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
         .completed-item {
@@ -33,19 +35,27 @@
                     </div>
                     <div>
                         <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">개강 및 문자 발송 스케줄러</h1>
-                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium">전체 및 미참여자 대상 스마트 일정 관리</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium">전체 및 미참여자 대상 실시간동기화 스케줄러</p>
                     </div>
                 </div>
             </div>
             
             <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-                <button onclick="openBatchModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-100 transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
-                    📊 일괄등록
+                <button onclick="document.getElementById('excel-file-input').click()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-100 transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    📂 엑셀 파일 업로드
+                </button>
+                <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+
+                <button onclick="openAutoBatchModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    ⚡ 학사일정 자동생성
+                </button>
+                <button onclick="openBatchModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    📊 수동 표 일괄등록
                 </button>
                 <button onclick="openCategoryModal()" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs font-semibold rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
                     ⚙️ 분류설정
                 </button>
-                <button onclick="openModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-200 transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <button onclick="openModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
                     ✨ 개별추가
                 </button>
             </div>
@@ -100,7 +110,7 @@
                 <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
                     <div class="flex items-center gap-2">
                         <button onclick="changeMonth(-1)" class="w-8 h-8 sm:w-9 sm:h-9 border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center text-slate-600 font-bold transition">‹</button>
-                        <h2 id="calendar-title" class="text-base sm:text-lg font-bold text-slate-800 tracking-tight">2026년 10월</h2>
+                        <h2 id="calendar-title" class="text-base sm:text-lg font-bold text-slate-800 tracking-tight"></h2>
                         <button onclick="changeMonth(1)" class="w-8 h-8 sm:w-9 sm:h-9 border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center text-slate-600 font-bold transition">›</button>
                     </div>
                     <button onclick="goToToday()" class="px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition">오늘</button>
@@ -133,7 +143,7 @@
             <div class="flex justify-between items-center mb-4 sm:mb-6">
                 <div>
                     <h3 class="text-sm sm:text-base font-bold text-slate-900">전체 일정 목록 및 관리</h3>
-                    <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">상태 클릭으로 바로 변경하거나 [수정] 버튼으로 내용을 편집할 수 있습니다.</p>
+                    <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">시작일과 종료일 기간을 포함하여 일정 및 상태를 관리합니다.</p>
                 </div>
             </div>
 
@@ -141,7 +151,7 @@
                 <table class="w-full text-left border-collapse min-w-[650px] sm:min-w-full">
                     <thead>
                         <tr class="border-b border-slate-100 text-slate-400 text-[11px] sm:text-xs font-bold tracking-wider uppercase">
-                            <th class="py-3 sm:py-3.5 px-3 sm:px-4">날짜</th>
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4">기간 (시작일 ~ 종료일)</th>
                             <th class="py-3 sm:py-3.5 px-3 sm:px-4">분류</th>
                             <th class="py-3 sm:py-3.5 px-3 sm:px-4">발송 대상</th>
                             <th class="py-3 sm:py-3.5 px-3 sm:px-4">문자 내용</th>
@@ -157,6 +167,31 @@
         </div>
     </main>
 
+    <!-- Auto Batch Add Modal -->
+    <div id="auto-batch-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl border border-slate-100">
+            <h3 class="text-lg sm:text-xl font-bold mb-1 text-slate-900">⚡ 학사일정 자동생성</h3>
+            <p class="text-xs text-slate-400 mb-5">입력하신 개강일을 기준으로 주차별 강의, 과제, 시험 일정이 기간(시작~종료)별로 자동 산출됩니다.</p>
+            
+            <form onsubmit="handleAutoBatchSubmit(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">기수 명칭</label>
+                    <input type="text" id="auto-prefix" placeholder="예: 2기수" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">개강 날짜 (1주차 시작일)</label>
+                    <input type="date" id="auto-start-date" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition">
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeAutoBatchModal()" class="flex-1 py-3 border border-slate-200 rounded-2xl text-slate-600 text-xs font-bold hover:bg-slate-50 transition">취소</button>
+                    <button type="submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-indigo-200 transition">자동 생성하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Schedule Single Add/Edit Modal -->
     <div id="schedule-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl border border-slate-100">
@@ -164,21 +199,27 @@
             <form id="schedule-form" onsubmit="handleFormSubmit(event)">
                 <input type="hidden" id="edit-index" value="">
                 
-                <div class="mb-3.5 sm:mb-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">날짜</label>
-                    <input type="date" id="schedule-date" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
+                <div class="grid grid-cols-2 gap-3 mb-3.5 sm:mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">시작일</label>
+                        <input type="date" id="schedule-date" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:border-indigo-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">종료일 (선택)</label>
+                        <input type="date" id="schedule-end-date" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:border-indigo-500 outline-none transition">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mb-3.5 sm:mb-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">분류 선택</label>
-                        <select id="schedule-type" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
+                        <select id="schedule-type" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:border-indigo-500 outline-none transition">
                             <!-- Options Rendered Dynamically -->
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">발송 대상</label>
-                        <select id="schedule-target" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition font-bold text-indigo-600">
+                        <select id="schedule-target" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:border-indigo-500 outline-none transition font-bold text-indigo-600">
                             <option value="전체">📢 전체</option>
                             <option value="미참여자">🎯 미참여자</option>
                         </select>
@@ -187,7 +228,7 @@
 
                 <div class="mb-3.5 sm:mb-4">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">문자 내용</label>
-                    <input type="text" id="schedule-content" placeholder="예: 2-3기수 2주차 시작" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
+                    <input type="text" id="schedule-content" placeholder="예: 1주차 강의 시작" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition">
                 </div>
 
                 <div class="mb-5 sm:mb-6">
@@ -216,13 +257,13 @@
         </div>
     </div>
 
-    <!-- Batch Add Modal (Excel Table Form) -->
+    <!-- Batch Add Modal -->
     <div id="batch-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
         <div class="bg-white rounded-3xl w-full max-w-4xl p-5 sm:p-7 shadow-2xl border border-slate-100 flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h3 class="text-base sm:text-lg font-bold text-slate-900">📊 여러 일정 일괄 등록</h3>
-                    <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">엑셀처럼 행을 추가하며 여러 일정을 작성하세요.</p>
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900">📊 수동 표 일괄 등록</h3>
+                    <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">엑셀처럼 행을 추가하며 기간 및 일정을 작성하세요.</p>
                 </div>
                 <button onclick="addBatchRow()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold rounded-xl transition">
                     + 행 추가
@@ -230,14 +271,15 @@
             </div>
 
             <div class="overflow-y-auto flex-1 mb-4 sm:mb-5 pr-1 border border-slate-200/80 rounded-2xl">
-                <table class="w-full text-left border-collapse min-w-[550px] sm:min-w-full">
+                <table class="w-full text-left border-collapse min-w-[650px] sm:min-w-full">
                     <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500">
                         <tr>
-                            <th class="p-2.5 sm:p-3 w-32 sm:w-36">날짜</th>
-                            <th class="p-2.5 sm:p-3 w-28 sm:w-32">분류</th>
-                            <th class="p-2.5 sm:p-3 w-32 sm:w-36">발송 대상</th>
+                            <th class="p-2.5 sm:p-3 w-32">시작일</th>
+                            <th class="p-2.5 sm:p-3 w-32">종료일</th>
+                            <th class="p-2.5 sm:p-3 w-28">분류</th>
+                            <th class="p-2.5 sm:p-3 w-32">발송 대상</th>
                             <th class="p-2.5 sm:p-3">문자 내용</th>
-                            <th class="p-2.5 sm:p-3 w-12 sm:w-16 text-center">삭제</th>
+                            <th class="p-2.5 sm:p-3 w-12 text-center">삭제</th>
                         </tr>
                     </thead>
                     <tbody id="batch-table-body" class="divide-y divide-slate-100 text-xs">
@@ -272,26 +314,62 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
-    <script>
-        let categories = JSON.parse(localStorage.getItem('diary_categories')) || ['개강', '강의시작', '강의독려', '과제', '시험', '토론', '복습시험', '강의마감', '교강사출석'];
-        let schedules = JSON.parse(localStorage.getItem('diary_schedules')) || [];
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
-        const todayObj = new Date();
-        let currentYear = todayObj.getFullYear();
-        let currentMonth = todayObj.getMonth();
+    <!-- App JavaScript Logic -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9QCqpFLatO-mFZZ3NMSngz_hq52Wbi54",
+            authDomain: "diary-site-70311.firebaseapp.com",
+            databaseURL: "https://diary-site-70311-default-rtdb.firebaseio.com",
+            projectId: "diary-site-70311",
+            storageBucket: "diary-site-70311.firebasestorage.app",
+            messagingSenderId: "425971233123",
+            appId: "1:425971233123:web:5916cd81d72ff01b432356",
+            measurementId: "G-WRRSESHYY5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let categories = ['학습기간', '수강일정', '토론/복습시험', '중간고사', '기말고사', '과제', '개강', '강의시작', '강의독려'];
+        let schedules = [];
+
+        // 오늘 날짜로 즉시 초기화
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
         let currentFilter = 'all';
 
-        function saveData() {
-            localStorage.setItem('diary_categories', JSON.stringify(categories));
-            localStorage.setItem('diary_schedules', JSON.stringify(schedules));
-        }
+        // 즉시 렌더링 실행 (로딩 지연 원천 차단)
+        renderCalendar();
+        renderTable();
+        updateStats();
+        updateCategorySelect();
 
-        function init() {
+        // Firebase 실시간 동기화
+        db.ref('scheduler_data').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.categories) categories = data.categories;
+                if (data.schedules) {
+                    schedules = Array.isArray(data.schedules) ? data.schedules : Object.values(data.schedules);
+                } else {
+                    schedules = [];
+                }
+            }
             renderCalendar();
             renderTable();
             updateStats();
             updateCategorySelect();
+        });
+
+        function saveData() {
+            db.ref('scheduler_data').set({
+                categories: categories,
+                schedules: schedules
+            });
         }
 
         function changeMonth(dir) {
@@ -327,8 +405,11 @@
 
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
+            const title = document.getElementById('calendar-title');
+            if(!grid || !title) return;
+            
             grid.innerHTML = '';
-            document.getElementById('calendar-title').innerText = `${currentYear}년 ${currentMonth + 1}월`;
+            title.innerText = `${currentYear}년 ${currentMonth + 1}월`;
 
             const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
             const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -366,7 +447,15 @@
 
                 cell.appendChild(dayHeader);
 
-                const daySchedules = schedules.filter(s => s.date === dateStr);
+                // 기간 내 포함 일정 연산
+                const daySchedules = schedules.filter(s => {
+                    if (!s) return false;
+                    if (s.endDate) {
+                        return dateStr >= s.date && dateStr <= s.endDate;
+                    }
+                    return s.date === dateStr;
+                });
+
                 const list = document.createElement('div');
                 list.className = 'space-y-1 overflow-y-auto flex-1';
 
@@ -376,13 +465,14 @@
 
                     const badge = document.createElement('div');
                     let color = 'bg-indigo-50 text-indigo-600 border-indigo-100';
-                    if (item.type === '개강') color = 'bg-rose-50 text-rose-600 border-rose-100';
-                    if (item.type.includes('마감')) color = 'bg-amber-50 text-amber-600 border-amber-100';
+                    if (item.type && item.type.includes('개강')) color = 'bg-rose-50 text-rose-600 border-rose-100';
+                    if (item.type && (item.type.includes('마감') || item.type.includes('시험'))) color = 'bg-amber-50 text-amber-600 border-amber-100';
 
                     const targetLabel = item.target === '미참여자' ? '[미참여자]' : '[전체]';
+                    const periodLabel = item.endDate ? ` (${item.date.slice(5)}~${item.endDate.slice(5)})` : '';
 
                     badge.className = `text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-xl font-semibold border cursor-pointer truncate transition hover:scale-[0.98] ${color} ${item.completed ? 'completed-item' : ''}`;
-                    badge.innerText = `${item.completed ? '✅' : '⏳'} ${targetLabel} [${item.type}] ${item.content}`;
+                    badge.innerText = `${item.completed ? '✅' : '⏳'} ${targetLabel} [${item.type}] ${item.content}${periodLabel}`;
                     badge.onclick = (e) => {
                         e.stopPropagation();
                         toggleComplete(item.id);
@@ -397,9 +487,10 @@
 
         function renderTable() {
             const tbody = document.getElementById('schedule-table-body');
+            if(!tbody) return;
             tbody.innerHTML = '';
 
-            let filtered = [...schedules];
+            let filtered = schedules.filter(s => s != null);
             if (currentFilter === 'completed') filtered = filtered.filter(s => s.completed);
             if (currentFilter === 'pending') filtered = filtered.filter(s => !s.completed);
 
@@ -418,8 +509,10 @@
                     ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-amber-50 text-amber-600 font-bold border border-amber-200">🎯 미참여자</span>`
                     : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-indigo-50 text-indigo-600 font-bold border border-indigo-200">📢 전체</span>`;
 
+                const displayDate = item.endDate ? `${item.date} ~ ${item.endDate}` : item.date;
+
                 tr.innerHTML = `
-                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-semibold text-slate-700 text-xs">${item.date}</td>
+                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-semibold text-slate-700 text-xs">${displayDate}</td>
                     <td class="py-3 sm:py-4 px-3 sm:px-4"><span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-slate-100 text-slate-600 font-bold">${item.type}</span></td>
                     <td class="py-3 sm:py-4 px-3 sm:px-4">${targetTag}</td>
                     <td class="py-3 sm:py-4 px-3 sm:px-4 font-medium ${item.completed ? 'line-through text-slate-300' : 'text-slate-800'}">${item.content}</td>
@@ -438,24 +531,23 @@
         }
 
         function updateStats() {
-            document.getElementById('stat-total').innerText = `${schedules.length}건`;
-            document.getElementById('stat-completed').innerText = `${schedules.filter(s => s.completed).length}건`;
-            document.getElementById('stat-pending').innerText = `${schedules.filter(s => !s.completed).length}건`;
+            const valid = schedules.filter(s => s != null);
+            document.getElementById('stat-total').innerText = `${valid.length}건`;
+            document.getElementById('stat-completed').innerText = `${valid.filter(s => s.completed).length}건`;
+            document.getElementById('stat-pending').innerText = `${valid.filter(s => !s.completed).length}건`;
         }
 
         function toggleComplete(id) {
-            const item = schedules.find(s => s.id === id);
+            const item = schedules.find(s => s && s.id === id);
             if (item) {
                 item.completed = !item.completed;
                 saveData();
-                renderCalendar();
-                renderTable();
-                updateStats();
             }
         }
 
         function updateCategorySelect() {
             const select = document.getElementById('schedule-type');
+            if(!select) return;
             select.innerHTML = '';
             categories.forEach(cat => {
                 const opt = document.createElement('option');
@@ -469,6 +561,7 @@
             document.getElementById('modal-title').innerText = '새 일정 등록';
             document.getElementById('edit-index').value = '';
             document.getElementById('schedule-date').value = '';
+            document.getElementById('schedule-end-date').value = '';
             document.getElementById('schedule-content').value = '';
             document.getElementById('schedule-target').value = '전체';
             document.getElementById('status-pending').checked = true;
@@ -476,11 +569,12 @@
         }
 
         function openEditModal(id) {
-            const item = schedules.find(s => s.id === id);
+            const item = schedules.find(s => s && s.id === id);
             if (item) {
                 document.getElementById('modal-title').innerText = '일정 수정';
                 document.getElementById('edit-index').value = item.id;
                 document.getElementById('schedule-date').value = item.date;
+                document.getElementById('schedule-end-date').value = item.endDate || '';
                 document.getElementById('schedule-type').value = item.type;
                 document.getElementById('schedule-target').value = item.target || '전체';
                 document.getElementById('schedule-content').value = item.content;
@@ -503,45 +597,201 @@
             e.preventDefault();
             const editId = document.getElementById('edit-index').value;
             const date = document.getElementById('schedule-date').value;
+            const endDate = document.getElementById('schedule-end-date').value;
             const type = document.getElementById('schedule-type').value;
             const target = document.getElementById('schedule-target').value;
             const content = document.getElementById('schedule-content').value;
             const isCompleted = document.getElementById('status-completed').checked;
 
             if (editId) {
-                const item = schedules.find(s => s.id == editId);
+                const item = schedules.find(s => s && s.id == editId);
                 if (item) { 
                     item.date = date; 
+                    item.endDate = endDate;
                     item.type = type; 
                     item.target = target;
                     item.content = content; 
                     item.completed = isCompleted;
                 }
             } else {
-                const newId = schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1;
-                schedules.push({ id: newId, date, type, target, content, completed: isCompleted });
+                const validSchedules = schedules.filter(s => s != null);
+                const newId = validSchedules.length > 0 ? Math.max(...validSchedules.map(s => s.id)) + 1 : 1;
+                schedules.push({ id: newId, date, endDate, type, target, content, completed: isCompleted });
             }
 
             saveData();
             closeModal();
-            renderCalendar();
-            renderTable();
-            updateStats();
         }
 
         function deleteSchedule(id) {
             if (confirm('정말 삭제하시겠습니까?')) {
-                schedules = schedules.filter(s => s.id !== id);
+                schedules = schedules.filter(s => s && s.id !== id);
                 saveData();
-                renderCalendar();
-                renderTable();
-                updateStats();
             }
         }
 
-        /* --- 📊 표 방식 일괄 등록 모달 로직 --- */
+        /* --- 📂 엑셀 파일 업로드 파싱 기능 --- */
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    if (jsonRows.length < 2) {
+                        alert('엑셀 파일에 유효한 데이터가 없습니다.');
+                        return;
+                    }
+
+                    // 헤더 분석 (어떤 열이 날짜/내용인지 유연하게 매칭)
+                    const header = jsonRows[0].map(h => String(h).trim());
+                    let dateIdx = -1, endDateIdx = -1, typeIdx = -1, targetIdx = -1, contentIdx = -1;
+
+                    header.forEach((h, idx) => {
+                        if (h.includes('시작') || h.includes('날짜') || h.includes('일자')) dateIdx = idx;
+                        else if (h.includes('종료')) endDateIdx = idx;
+                        else if (h.includes('분류') || h.includes('유형')) typeIdx = idx;
+                        else if (h.includes('대상')) targetIdx = idx;
+                        else if (h.includes('내용') || h.includes('일정') || h.includes('문자')) contentIdx = idx;
+                    });
+
+                    // 만약 명시적 헤더를 못 찾았다면 일반적인 순서로 가정 (0:시작일, 1:종료일, 2:분류, 3:대상, 4:내용)
+                    if (dateIdx === -1) dateIdx = 0;
+                    if (endDateIdx === -1 && header.length > 5) endDateIdx = 1;
+                    if (contentIdx === -1) contentIdx = header.length - 1;
+
+                    let addedCount = 0;
+                    const validSchedules = schedules.filter(s => s != null);
+                    let maxId = validSchedules.length > 0 ? Math.max(...validSchedules.map(s => s.id)) : 0;
+
+                    for (let i = 1; i < jsonRows.length; i++) {
+                        const row = jsonRows[i];
+                        if (!row || row.length === 0) continue;
+
+                        let dateVal = row[dateIdx] ? String(row[dateIdx]).trim() : '';
+                        let endDateVal = endDateIdx !== -1 && row[endDateIdx] ? String(row[endDateIdx]).trim() : '';
+                        let typeVal = typeIdx !== -1 && row[typeIdx] ? String(row[typeIdx]).trim() : '수강일정';
+                        let targetVal = targetIdx !== -1 && row[targetIdx] ? String(row[targetIdx]).trim() : '전체';
+                        let contentVal = contentIdx !== -1 && row[contentIdx] ? String(row[contentIdx]).trim() : '';
+
+                        // 엑셀 날짜 시리얼 번호 변환 처리 (필요시)
+                        if (!isNaN(dateVal) && dateVal !== '') {
+                            const d = XLSX.SSF.parse_date_code(Number(dateVal));
+                            if (d) dateVal = `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+                        }
+                        if (!isNaN(endDateVal) && endDateVal !== '') {
+                            const d = XLSX.SSF.parse_date_code(Number(endDateVal));
+                            if (d) endDateVal = `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+                        }
+
+                        if (dateVal && contentVal) {
+                            maxId++;
+                            schedules.push({
+                                id: maxId,
+                                date: dateVal,
+                                endDate: endDateVal,
+                                type: categories.includes(typeVal) ? typeVal : '수강일정',
+                                target: targetVal.includes('미참') ? '미참여자' : '전체',
+                                content: contentVal,
+                                completed: false
+                            });
+                            addedCount++;
+                        }
+                    }
+
+                    if (addedCount > 0) {
+                        saveData();
+                        alert(`엑셀에서 성공적으로 ${addedCount}건의 일정을 불러왔습니다!`);
+                    } else {
+                        alert('올바른 형식의 데이터를 찾지 못했습니다. (시작일과 문자내용 열을 확인해주세요)');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('엑셀 파일을 읽는 중 오류가 발생했습니다.');
+                }
+                event.target.value = ''; // 초기화
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        /* --- ⚡ 학사일정 자동생성 --- */
+        function openAutoBatchModal() {
+            document.getElementById('auto-batch-modal').classList.remove('hidden');
+        }
+
+        function closeAutoBatchModal() {
+            document.getElementById('auto-batch-modal').classList.add('hidden');
+        }
+
+        function handleAutoBatchSubmit(e) {
+            e.preventDefault();
+            const prefix = document.getElementById('auto-prefix').value.trim();
+            const startDateStr = document.getElementById('auto-start-date').value;
+
+            if (!prefix || !startDateStr) return;
+
+            const baseDate = new Date(startDateStr);
+
+            function addDays(date, days) {
+                const d = new Date(date);
+                d.setDate(d.getDate() + days);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            const generatedItems = [
+                { offset: 0, endOffset: 104, type: '학습기간', target: '전체', content: `${prefix} 전체 학습기간` },
+                { offset: 35, endOffset: 48, type: '토론/복습시험', target: '전체', content: `${prefix} 토론/복습시험 제출기간` },
+                { offset: 50, endOffset: 53, type: '중간고사', target: '전체', content: `${prefix} 중간고사 응시기간` },
+                { offset: 56, endOffset: 83, type: '과제', target: '전체', content: `${prefix} 과제 제출기간` },
+                { offset: 99, endOffset: 102, type: '기말고사', target: '전체', content: `${prefix} 기말고사 응시기간` }
+            ];
+
+            for (let week = 1; week <= 14; week++) {
+                if (week === 8) continue;
+                const startOffset = (week - 1) * 7;
+                generatedItems.push({
+                    offset: startOffset,
+                    endOffset: startOffset + 13,
+                    type: '수강일정',
+                    target: '전체',
+                    content: `${prefix} ${week}주차 수강기간`
+                });
+            }
+
+            const validSchedules = schedules.filter(s => s != null);
+            let maxId = validSchedules.length > 0 ? Math.max(...validSchedules.map(s => s.id)) : 0;
+
+            generatedItems.forEach(item => {
+                maxId++;
+                schedules.push({
+                    id: maxId,
+                    date: addDays(baseDate, item.offset),
+                    endDate: addDays(baseDate, item.endOffset),
+                    type: item.type,
+                    target: item.target,
+                    content: item.content,
+                    completed: false
+                });
+            });
+
+            saveData();
+            closeAutoBatchModal();
+            alert(`${prefix} 학사일정이 자동생성되었습니다!`);
+        }
+
+        /* --- 📊 수동 표 일괄 등록 --- */
         function openBatchModal() {
             const tbody = document.getElementById('batch-table-body');
+            if(!tbody) return;
             tbody.innerHTML = '';
             for(let i = 0; i < 3; i++) {
                 addBatchRow();
@@ -555,12 +805,14 @@
 
         function addBatchRow() {
             const tbody = document.getElementById('batch-table-body');
+            if(!tbody) return;
             const tr = document.createElement('tr');
             
             let categoryOptions = categories.map(c => `<option value="${c}">${c}</option>`).join('');
 
             tr.innerHTML = `
                 <td class="p-2"><input type="date" class="batch-date w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500"></td>
+                <td class="p-2"><input type="date" class="batch-end-date w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500"></td>
                 <td class="p-2">
                     <select class="batch-type w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500">
                         ${categoryOptions}
@@ -583,10 +835,12 @@
         function saveBatchSchedules() {
             const rows = document.querySelectorAll('#batch-table-body tr');
             let addedCount = 0;
-            let maxId = schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) : 0;
+            const validSchedules = schedules.filter(s => s != null);
+            let maxId = validSchedules.length > 0 ? Math.max(...validSchedules.map(s => s.id)) : 0;
 
             rows.forEach(row => {
                 const date = row.querySelector('.batch-date').value;
+                const endDate = row.querySelector('.batch-end-date').value;
                 const type = row.querySelector('.batch-type').value;
                 const target = row.querySelector('.batch-target').value;
                 const content = row.querySelector('.batch-content').value.trim();
@@ -596,6 +850,7 @@
                     schedules.push({
                         id: maxId,
                         date: date,
+                        endDate: endDate,
                         type: type,
                         target: target,
                         content: content,
@@ -612,9 +867,6 @@
 
             saveData();
             closeBatchModal();
-            renderCalendar();
-            renderTable();
-            updateStats();
         }
 
         /* --- 분류 관리 모달 --- */
@@ -626,12 +878,11 @@
         function closeCategoryModal() {
             document.getElementById('category-modal').classList.add('hidden');
             updateCategorySelect();
-            renderCalendar();
-            renderTable();
         }
 
         function renderCategoryList() {
             const listContainer = document.getElementById('category-list');
+            if(!listContainer) return;
             listContainer.innerHTML = '';
             categories.forEach((cat, index) => {
                 const div = document.createElement('div');
@@ -664,32 +915,6 @@
             saveData();
             renderCategoryList();
         }
-
-        init();
     </script>
-
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9QCqpFLatO-mFZZ3NMSngz_hq52Wbi54",
-    authDomain: "diary-site-70311.firebaseapp.com",
-    projectId: "diary-site-70311",
-    storageBucket: "diary-site-70311.firebasestorage.app",
-    messagingSenderId: "425971233123",
-    appId: "1:425971233123:web:5916cd81d72ff01b432356",
-    measurementId: "G-WRRSESHYY5"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 </body>
 </html>
