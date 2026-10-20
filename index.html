@@ -24,68 +24,70 @@
 <body class="bg-[#F8FAFC] text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
     <!-- Top Navigation Bar -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-lg shadow-indigo-200/50 font-bold text-lg">
-                    📅
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold text-slate-900 tracking-tight">개강 및 문자 발송 스케줄러</h1>
-                    <p class="text-xs text-slate-400 font-medium">기수별 문자 발송 일정을 스마트하게 관리하세요</p>
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200/85 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-auto sm:h-20 py-3 sm:py-0 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-lg shadow-indigo-200/50 font-bold text-base sm:text-lg">
+                        📅
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">개강 및 문자 발송 스케줄러</h1>
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium">전체 및 미참여자 대상 스마트 일정 관리</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="flex items-center gap-2.5">
-                <button onclick="openCategoryModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs font-semibold rounded-xl transition active:scale-95 flex items-center gap-1.5">
-                    ⚙️ 분류 설정
+            <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                <button onclick="openBatchModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-100 transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    📊 일괄등록
                 </button>
-                <button onclick="openModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-200 transition active:scale-95 flex items-center gap-1.5">
-                    ✨ 일정 추가
+                <button onclick="openCategoryModal()" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs font-semibold rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    ⚙️ 분류설정
+                </button>
+                <button onclick="openModal()" class="flex-1 sm:flex-none px-3.5 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-200 transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    ✨ 개별추가
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full space-y-6 sm:space-y-8">
         
         <!-- Filter Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <!-- All -->
-            <div onclick="setFilter('all')" id="card-all" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all group relative overflow-hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+            <div onclick="setFilter('all')" id="card-all" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all group relative overflow-hidden">
                 <div class="flex justify-between items-center relative z-10">
                     <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">전체 일정</span>
-                        <h3 id="stat-total" class="text-2xl font-black text-slate-900 mt-0.5">0건</h3>
+                        <span class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">전체 일정</span>
+                        <h3 id="stat-total" class="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">0건</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg sm:text-xl group-hover:scale-110 transition-transform">
                         📋
                     </div>
                 </div>
             </div>
 
-            <!-- complete is 완성... competed 저장할 시 어떻게 되는지 수정 -->
-            <div onclick="setFilter('completed')" id="card-completed" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all group relative overflow-hidden">
+            <div onclick="setFilter('completed')" id="card-completed" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all group relative overflow-hidden">
                 <div class="flex justify-between items-center relative z-10">
                     <div>
-                        <span class="text-xs font-semibold text-emerald-600/80 uppercase tracking-wider">발송 완료</span>
-                        <h3 id="stat-completed" class="text-2xl font-black text-emerald-600 mt-0.5">0건</h3>
+                        <span class="text-[11px] sm:text-xs font-semibold text-emerald-600/80 uppercase tracking-wider">발송 완료</span>
+                        <h3 id="stat-completed" class="text-xl sm:text-2xl font-black text-emerald-600 mt-0.5">0건</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl group-hover:scale-110 transition-transform">
                         ✅
                     </div>
                 </div>
             </div>
 
-            <!-- Pending -->
-            <div onclick="setFilter('pending')" id="card-pending" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-amber-500 hover:shadow-md transition-all group relative overflow-hidden">
+            <div onclick="setFilter('pending')" id="card-pending" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-amber-500 hover:shadow-md transition-all group relative overflow-hidden">
                 <div class="flex justify-between items-center relative z-10">
                     <div>
-                        <span class="text-xs font-semibold text-amber-600/80 uppercase tracking-wider">발송 대기</span>
-                        <h3 id="stat-pending" class="text-2xl font-black text-amber-500 mt-0.5">0건</h3>
+                        <span class="text-[11px] sm:text-xs font-semibold text-amber-600/80 uppercase tracking-wider">발송 대기</span>
+                        <h3 id="stat-pending" class="text-xl sm:text-2xl font-black text-amber-500 mt-0.5">0건</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg sm:text-xl group-hover:scale-110 transition-transform">
                         ⏳
                     </div>
                 </div>
@@ -94,12 +96,14 @@
 
         <!-- Calendar Section -->
         <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <!-- Calendar Header -->
-            <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <button onclick="changeMonth(-1)" class="w-9 h-9 border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center text-slate-600 font-bold transition">‹</button>
-                    <h2 id="calendar-title" class="text-lg font-bold text-slate-800 tracking-tight">2026년 10월</h2>
-                    <button onclick="changeMonth(1)" class="w-9 h-9 border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center text-slate-600 font-bold transition">›</button>
+            <div class="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 sm:w-9 sm:h-9 border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center text-slate-600 font-bold transition">‹</button>
+                        <h2 id="calendar-title" class="text-base sm:text-lg font-bold text-slate-800 tracking-tight">2026년 10월</h2>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 sm:w-9 sm:h-9 border border-slate-200 rounded-xl hover:bg-slate-50 flex items-center justify-center text-slate-600 font-bold transition">›</button>
+                    </div>
+                    <button onclick="goToToday()" class="px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition">오늘</button>
                 </div>
                 
                 <div id="active-filter-badge" class="hidden items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold">
@@ -108,44 +112,44 @@
                 </div>
             </div>
 
-            <!-- Days Grid Header -->
-            <div class="grid grid-cols-7 bg-slate-50/50 text-center font-bold text-slate-400 text-xs border-b border-slate-100">
-                <div class="py-3 text-rose-500">일</div>
-                <div class="py-3">월</div>
-                <div class="py-3">화</div>
-                <div class="py-3">수</div>
-                <div class="py-3">목</div>
-                <div class="py-3">금</div>
-                <div class="py-3 text-sky-500">토</div>
+            <div class="grid grid-cols-7 bg-slate-50/50 text-center font-bold text-slate-400 text-[11px] sm:text-xs border-b border-slate-100">
+                <div class="py-2.5 sm:py-3 text-rose-500">일</div>
+                <div class="py-2.5 sm:py-3">월</div>
+                <div class="py-2.5 sm:py-3">화</div>
+                <div class="py-2.5 sm:py-3">수</div>
+                <div class="py-2.5 sm:py-3">목</div>
+                <div class="py-2.5 sm:py-3">금</div>
+                <div class="py-2.5 sm:py-3 text-sky-500">토</div>
             </div>
 
-            <!-- Calendar Cells -->
-            <div id="calendar-grid" class="grid grid-cols-7 auto-rows-fr bg-slate-100 gap-px">
+            <!-- Calendar Cells Grid -->
+            <div id="calendar-grid" class="grid grid-cols-7 auto-rows-fr bg-slate-200 gap-1 sm:gap-2 p-1.5 sm:p-2">
                 <!-- Dynamically Rendered -->
             </div>
         </div>
 
         <!-- Schedule List Table Section -->
-        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6">
-            <div class="flex justify-between items-center mb-6">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6">
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
                 <div>
-                    <h3 class="text-base font-bold text-slate-900">전체 일정 목록 및 관리</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">상태 클릭으로 바로 변경하거나 [수정] 버튼으로 내용을 편집할 수 있습니다.</p>
+                    <h3 class="text-sm sm:text-base font-bold text-slate-900">전체 일정 목록 및 관리</h3>
+                    <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">상태 클릭으로 바로 변경하거나 [수정] 버튼으로 내용을 편집할 수 있습니다.</p>
                 </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse min-w-[650px] sm:min-w-full">
                     <thead>
-                        <tr class="border-b border-slate-100 text-slate-400 text-xs font-bold tracking-wider uppercase">
-                            <th class="py-3.5 px-4">날짜</th>
-                            <th class="py-3.5 px-4">분류</th>
-                            <th class="py-3.5 px-4">문자 내용</th>
-                            <th class="py-3.5 px-4 text-center">발송 상태</th>
-                            <th class="py-3.5 px-4 text-center">관리</th>
+                        <tr class="border-b border-slate-100 text-slate-400 text-[11px] sm:text-xs font-bold tracking-wider uppercase">
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4">날짜</th>
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4">분류</th>
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4">발송 대상</th>
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4">문자 내용</th>
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4 text-center">발송 상태</th>
+                            <th class="py-3 sm:py-3.5 px-3 sm:px-4 text-center">관리</th>
                         </tr>
                     </thead>
-                    <tbody id="schedule-table-body" class="divide-y divide-slate-100 text-sm">
+                    <tbody id="schedule-table-body" class="divide-y divide-slate-100 text-xs sm:text-sm">
                         <!-- Dynamically Rendered -->
                     </tbody>
                 </table>
@@ -153,36 +157,41 @@
         </div>
     </main>
 
-    <!-- Schedule Add/Edit Modal -->
-    <div id="schedule-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4 transition-all">
-        <div class="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl border border-slate-100">
-            <h3 id="modal-title" class="text-xl font-bold mb-5 text-slate-900">일정 추가</h3>
+    <!-- Schedule Single Add/Edit Modal -->
+    <div id="schedule-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl border border-slate-100">
+            <h3 id="modal-title" class="text-lg sm:text-xl font-bold mb-4 sm:mb-5 text-slate-900">일정 추가</h3>
             <form id="schedule-form" onsubmit="handleFormSubmit(event)">
                 <input type="hidden" id="edit-index" value="">
                 
-                <!-- Date -->
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">날짜</label>
+                <div class="mb-3.5 sm:mb-4">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">날짜</label>
                     <input type="date" id="schedule-date" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
                 </div>
 
-                <!-- Category -->
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">분류 선택</label>
-                    <select id="schedule-type" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
-                        <!-- Options Rendered Dynamically -->
-                    </select>
+                <div class="grid grid-cols-2 gap-3 mb-3.5 sm:mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">분류 선택</label>
+                        <select id="schedule-type" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
+                            <!-- Options Rendered Dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">발송 대상</label>
+                        <select id="schedule-target" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition font-bold text-indigo-600">
+                            <option value="전체">📢 전체</option>
+                            <option value="미참여자">🎯 미참여자</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Content -->
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">문자 내용</label>
+                <div class="mb-3.5 sm:mb-4">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">문자 내용</label>
                     <input type="text" id="schedule-content" placeholder="예: 2-3기수 2주차 시작" required class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition">
                 </div>
 
-                <!-- Send Status Option (NEW) -->
-                <div class="mb-6">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">발송 상태</label>
+                <div class="mb-5 sm:mb-6">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">발송 상태</label>
                     <div class="grid grid-cols-2 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="schedule-status" value="pending" id="status-pending" class="peer hidden" checked>
@@ -199,7 +208,6 @@
                     </div>
                 </div>
 
-                <!-- Buttons -->
                 <div class="flex gap-3">
                     <button type="button" onclick="closeModal()" class="flex-1 py-3 border border-slate-200 rounded-2xl text-slate-600 text-xs font-bold hover:bg-slate-50 transition">취소</button>
                     <button type="submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-indigo-200 transition">저장하기</button>
@@ -208,18 +216,55 @@
         </div>
     </div>
 
+    <!-- Batch Add Modal (Excel Table Form) -->
+    <div id="batch-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-4xl p-5 sm:p-7 shadow-2xl border border-slate-100 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900">📊 여러 일정 일괄 등록</h3>
+                    <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">엑셀처럼 행을 추가하며 여러 일정을 작성하세요.</p>
+                </div>
+                <button onclick="addBatchRow()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold rounded-xl transition">
+                    + 행 추가
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 mb-4 sm:mb-5 pr-1 border border-slate-200/80 rounded-2xl">
+                <table class="w-full text-left border-collapse min-w-[550px] sm:min-w-full">
+                    <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500">
+                        <tr>
+                            <th class="p-2.5 sm:p-3 w-32 sm:w-36">날짜</th>
+                            <th class="p-2.5 sm:p-3 w-28 sm:w-32">분류</th>
+                            <th class="p-2.5 sm:p-3 w-32 sm:w-36">발송 대상</th>
+                            <th class="p-2.5 sm:p-3">문자 내용</th>
+                            <th class="p-2.5 sm:p-3 w-12 sm:w-16 text-center">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch-table-body" class="divide-y divide-slate-100 text-xs">
+                        <!-- Dynamically Inserted Batch Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeBatchModal()" class="flex-1 sm:flex-none px-5 py-2.5 border border-slate-200 rounded-xl text-slate-600 text-xs font-bold hover:bg-slate-50 transition">취소</button>
+                <button type="button" onclick="saveBatchSchedules()" class="flex-1 sm:flex-none px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition">모두 저장하기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Category Management Modal -->
     <div id="category-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
-        <div class="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl border border-slate-100">
-            <h3 class="text-xl font-bold mb-1 text-slate-900">문자 분류 설정</h3>
-            <p class="text-xs text-slate-400 mb-5">자주 사용하는 문자 유형을 추가하거나 삭제할 수 있습니다.</p>
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl border border-slate-100">
+            <h3 class="text-lg sm:text-xl font-bold mb-1 text-slate-900">문자 분류 설정</h3>
+            <p class="text-xs text-slate-400 mb-4 sm:mb-5">자주 사용하는 문자 유형을 추가하거나 삭제할 수 있습니다.</p>
             
-            <div class="flex gap-2 mb-5">
-                <input type="text" id="new-category-input" placeholder="새 분류명 (예: 보강안내)" class="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-2.5 text-sm outline-none focus:bg-white focus:border-indigo-500">
+            <div class="flex gap-2 mb-4 sm:mb-5">
+                <input type="text" id="new-category-input" placeholder="새 분류명 (예: 보강안내)" class="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs sm:text-sm outline-none focus:bg-white focus:border-indigo-500">
                 <button type="button" onclick="addCategory()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition">추가</button>
             </div>
 
-            <div id="category-list" class="space-y-2 max-h-52 overflow-y-auto mb-6 pr-1">
+            <div id="category-list" class="space-y-2 max-h-52 overflow-y-auto mb-5 sm:mb-6 pr-1">
                 <!-- Dynamically Rendered -->
             </div>
 
@@ -229,22 +274,18 @@
 
     <!-- JavaScript Logic -->
     <script>
-        let categories = ['개강', '강의시작', '강의독려', '과제', '시험', '토론', '복습시험', '강의마감', '교강사출석'];
-        
-        let schedules = [
-            // { id: 1, date: '2026-10-07', type: '개강', content: '2-2기수 개강 문자', completed: true },
-            // { id: 2, date: '2026-10-07', type: '강의시작', content: '2-3기수 강의시작', completed: true },
-            // { id: 3, date: '2026-10-07', type: '과제', content: '2-4기수 과제 안내', completed: false },
-            // { id: 4, date: '2026-10-08', type: '강의독려', content: '2-3기수 강의독려', completed: false },
-            // { id: 5, date: '2026-10-08', type: '시험', content: '2-10기수 시험 안내', completed: false },
-            // { id: 6, date: '2026-10-14', type: '개강', content: '2-11기수 개강 문자', completed: false },
-            // { id: 7, date: '2026-10-16', type: '강의마감', content: '2-3기수 강의마감', completed: false },
-            // { id: 8, date: '2026-10-22', type: '복습시험', content: '2-7기수 복습시험 안내', completed: false }
-        ];
+        let categories = JSON.parse(localStorage.getItem('diary_categories')) || ['개강', '강의시작', '강의독려', '과제', '시험', '토론', '복습시험', '강의마감', '교강사출석'];
+        let schedules = JSON.parse(localStorage.getItem('diary_schedules')) || [];
 
-        let currentYear = 2026;
-        let currentMonth = 9; // 10월
+        const todayObj = new Date();
+        let currentYear = todayObj.getFullYear();
+        let currentMonth = todayObj.getMonth();
         let currentFilter = 'all';
+
+        function saveData() {
+            localStorage.setItem('diary_categories', JSON.stringify(categories));
+            localStorage.setItem('diary_schedules', JSON.stringify(schedules));
+        }
 
         function init() {
             renderCalendar();
@@ -257,6 +298,13 @@
             currentMonth += dir;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        }
+
+        function goToToday() {
+            const now = new Date();
+            currentYear = now.getFullYear();
+            currentMonth = now.getMonth();
             renderCalendar();
         }
 
@@ -285,25 +333,42 @@
             const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
             const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
 
+            const realToday = new Date();
+            const todayStr = `${realToday.getFullYear()}-${String(realToday.getMonth() + 1).padStart(2, '0')}-${String(realToday.getDate()).padStart(2, '0')}`;
+
             for (let i = 0; i < firstDayIndex; i++) {
                 const empty = document.createElement('div');
-                empty.className = 'bg-slate-50/50 min-h-[120px] p-2 opacity-30';
+                empty.className = 'bg-slate-100/50 min-h-[90px] sm:min-h-[120px] p-1.5 sm:p-2 rounded-2xl opacity-30';
                 grid.appendChild(empty);
             }
 
             for (let day = 1; day <= lastDay; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = (dateStr === todayStr);
+
                 const cell = document.createElement('div');
-                cell.className = 'bg-white min-h-[120px] p-2 flex flex-col justify-between hover:bg-slate-50/50 transition';
+                cell.className = `min-h-[90px] sm:min-h-[120px] p-1.5 sm:p-2 flex flex-col justify-between transition rounded-2xl ${isToday ? 'bg-indigo-50/60 border-2 border-indigo-500 z-10 shadow-sm' : 'bg-white hover:bg-slate-50/80 border border-slate-100'}`;
 
                 const dayHeader = document.createElement('div');
-                dayHeader.className = 'text-xs font-bold text-slate-400 mb-1';
-                dayHeader.innerText = `${day}일`;
+                dayHeader.className = 'flex justify-between items-center mb-1';
+                
+                const dayText = document.createElement('span');
+                dayText.className = `text-[11px] sm:text-xs font-bold ${isToday ? 'text-indigo-600' : 'text-slate-400'}`;
+                dayText.innerText = `${day}일`;
+                dayHeader.appendChild(dayText);
+
+                if (isToday) {
+                    const todayBadge = document.createElement('span');
+                    todayBadge.className = 'text-[9px] sm:text-[10px] px-1 py-0.5 bg-indigo-600 text-white font-bold rounded-md';
+                    todayBadge.innerText = '오늘';
+                    dayHeader.appendChild(todayBadge);
+                }
+
                 cell.appendChild(dayHeader);
 
                 const daySchedules = schedules.filter(s => s.date === dateStr);
                 const list = document.createElement('div');
-                list.className = 'space-y-1.5 overflow-y-auto flex-1';
+                list.className = 'space-y-1 overflow-y-auto flex-1';
 
                 daySchedules.forEach(item => {
                     if (currentFilter === 'completed' && !item.completed) return;
@@ -314,8 +379,10 @@
                     if (item.type === '개강') color = 'bg-rose-50 text-rose-600 border-rose-100';
                     if (item.type.includes('마감')) color = 'bg-amber-50 text-amber-600 border-amber-100';
 
-                    badge.className = `text-[11px] px-2 py-1 rounded-xl font-semibold border cursor-pointer truncate transition hover:scale-[0.98] ${color} ${item.completed ? 'completed-item' : ''}`;
-                    badge.innerText = `${item.completed ? '✅' : '⏳'} [${item.type}] ${item.content}`;
+                    const targetLabel = item.target === '미참여자' ? '[미참여자]' : '[전체]';
+
+                    badge.className = `text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-xl font-semibold border cursor-pointer truncate transition hover:scale-[0.98] ${color} ${item.completed ? 'completed-item' : ''}`;
+                    badge.innerText = `${item.completed ? '✅' : '⏳'} ${targetLabel} [${item.type}] ${item.content}`;
                     badge.onclick = (e) => {
                         e.stopPropagation();
                         toggleComplete(item.id);
@@ -339,23 +406,29 @@
             filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 text-xs font-medium">등록되거나 조건에 부합하는 일정이 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 text-xs font-medium">등록되거나 조건에 부합하는 일정이 없습니다.</td></tr>`;
                 return;
             }
 
             filtered.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-slate-50/80 transition ${item.completed ? 'bg-slate-50/40' : ''}`;
+                
+                const targetTag = item.target === '미참여자' 
+                    ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-amber-50 text-amber-600 font-bold border border-amber-200">🎯 미참여자</span>`
+                    : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-indigo-50 text-indigo-600 font-bold border border-indigo-200">📢 전체</span>`;
+
                 tr.innerHTML = `
-                    <td class="py-4 px-4 font-semibold text-slate-700 text-xs">${item.date}</td>
-                    <td class="py-4 px-4"><span class="px-2.5 py-1 text-[11px] rounded-lg bg-slate-100 text-slate-600 font-bold">${item.type}</span></td>
-                    <td class="py-4 px-4 font-medium ${item.completed ? 'line-through text-slate-300' : 'text-slate-800'}">${item.content}</td>
-                    <td class="py-4 px-4 text-center">
-                        <button onclick="toggleComplete(${item.id})" class="px-3 py-1.5 text-xs rounded-xl font-bold transition active:scale-95 ${item.completed ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}">
+                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-semibold text-slate-700 text-xs">${item.date}</td>
+                    <td class="py-3 sm:py-4 px-3 sm:px-4"><span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-slate-100 text-slate-600 font-bold">${item.type}</span></td>
+                    <td class="py-3 sm:py-4 px-3 sm:px-4">${targetTag}</td>
+                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-medium ${item.completed ? 'line-through text-slate-300' : 'text-slate-800'}">${item.content}</td>
+                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-center">
+                        <button onclick="toggleComplete(${item.id})" class="px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs rounded-xl font-bold transition active:scale-95 ${item.completed ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}">
                             ${item.completed ? '발송 완료 ✅' : '발송 대기 ⏳'}
                         </button>
                     </td>
-                    <td class="py-4 px-4 text-center space-x-2">
+                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-center space-x-2">
                         <button onclick="openEditModal(${item.id})" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold">수정</button>
                         <button onclick="deleteSchedule(${item.id})" class="text-rose-500 hover:text-rose-700 text-xs font-bold">삭제</button>
                     </td>
@@ -374,6 +447,7 @@
             const item = schedules.find(s => s.id === id);
             if (item) {
                 item.completed = !item.completed;
+                saveData();
                 renderCalendar();
                 renderTable();
                 updateStats();
@@ -396,7 +470,8 @@
             document.getElementById('edit-index').value = '';
             document.getElementById('schedule-date').value = '';
             document.getElementById('schedule-content').value = '';
-            document.getElementById('status-pending').checked = true; // 기본값: 발송대기
+            document.getElementById('schedule-target').value = '전체';
+            document.getElementById('status-pending').checked = true;
             document.getElementById('schedule-modal').classList.remove('hidden');
         }
 
@@ -407,9 +482,9 @@
                 document.getElementById('edit-index').value = item.id;
                 document.getElementById('schedule-date').value = item.date;
                 document.getElementById('schedule-type').value = item.type;
+                document.getElementById('schedule-target').value = item.target || '전체';
                 document.getElementById('schedule-content').value = item.content;
                 
-                // 발송 상태 반영
                 if (item.completed) {
                     document.getElementById('status-completed').checked = true;
                 } else {
@@ -429,6 +504,7 @@
             const editId = document.getElementById('edit-index').value;
             const date = document.getElementById('schedule-date').value;
             const type = document.getElementById('schedule-type').value;
+            const target = document.getElementById('schedule-target').value;
             const content = document.getElementById('schedule-content').value;
             const isCompleted = document.getElementById('status-completed').checked;
 
@@ -437,14 +513,16 @@
                 if (item) { 
                     item.date = date; 
                     item.type = type; 
+                    item.target = target;
                     item.content = content; 
                     item.completed = isCompleted;
                 }
             } else {
                 const newId = schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1;
-                schedules.push({ id: newId, date, type, content, completed: isCompleted });
+                schedules.push({ id: newId, date, type, target, content, completed: isCompleted });
             }
 
+            saveData();
             closeModal();
             renderCalendar();
             renderTable();
@@ -454,12 +532,92 @@
         function deleteSchedule(id) {
             if (confirm('정말 삭제하시겠습니까?')) {
                 schedules = schedules.filter(s => s.id !== id);
+                saveData();
                 renderCalendar();
                 renderTable();
                 updateStats();
             }
         }
 
+        /* --- 📊 표 방식 일괄 등록 모달 로직 --- */
+        function openBatchModal() {
+            const tbody = document.getElementById('batch-table-body');
+            tbody.innerHTML = '';
+            for(let i = 0; i < 3; i++) {
+                addBatchRow();
+            }
+            document.getElementById('batch-modal').classList.remove('hidden');
+        }
+
+        function closeBatchModal() {
+            document.getElementById('batch-modal').classList.add('hidden');
+        }
+
+        function addBatchRow() {
+            const tbody = document.getElementById('batch-table-body');
+            const tr = document.createElement('tr');
+            
+            let categoryOptions = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            tr.innerHTML = `
+                <td class="p-2"><input type="date" class="batch-date w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500"></td>
+                <td class="p-2">
+                    <select class="batch-type w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500">
+                        ${categoryOptions}
+                    </select>
+                </td>
+                <td class="p-2">
+                    <select class="batch-target w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500 font-bold text-indigo-600">
+                        <option value="전체">📢 전체</option>
+                        <option value="미참여자">🎯 미참여자</option>
+                    </select>
+                </td>
+                <td class="p-2"><input type="text" placeholder="문자 내용" class="batch-content w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none focus:bg-white focus:border-indigo-500"></td>
+                <td class="p-2 text-center">
+                    <button type="button" onclick="this.closest('tr').remove()" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function saveBatchSchedules() {
+            const rows = document.querySelectorAll('#batch-table-body tr');
+            let addedCount = 0;
+            let maxId = schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) : 0;
+
+            rows.forEach(row => {
+                const date = row.querySelector('.batch-date').value;
+                const type = row.querySelector('.batch-type').value;
+                const target = row.querySelector('.batch-target').value;
+                const content = row.querySelector('.batch-content').value.trim();
+
+                if (date && content) {
+                    maxId++;
+                    schedules.push({
+                        id: maxId,
+                        date: date,
+                        type: type,
+                        target: target,
+                        content: content,
+                        completed: false
+                    });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount === 0) {
+                alert('날짜와 문자 내용이 작성된 행이 최소 1개 이상 있어야 합니다.');
+                return;
+            }
+
+            saveData();
+            closeBatchModal();
+            renderCalendar();
+            renderTable();
+            updateStats();
+        }
+
+        /* --- 분류 관리 모달 --- */
         function openCategoryModal() {
             renderCategoryList();
             document.getElementById('category-modal').classList.remove('hidden');
@@ -492,6 +650,7 @@
             if (val && !categories.includes(val)) {
                 categories.push(val);
                 input.value = '';
+                saveData();
                 renderCategoryList();
             }
         }
@@ -502,6 +661,7 @@
                 return;
             }
             categories.splice(index, 1);
+            saveData();
             renderCategoryList();
         }
 
