@@ -319,207 +319,72 @@
         updateCategorySelect();
 
         // Firebase 실시간 동기화
-        db.ref('scheduler_clean_data').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                if (data.categories) categories = data.categories;
-                if (data.schedules) {
-                    schedules = data.schedules;
-                } else {
-                    schedules = {};
-                }
-            } else {
-                schedules = {};
-            }
-            renderCalendar();
-            renderTable();
-            updateStats();
-            updateCategorySelect();
+        // ==========================================
+// FIREBASE 실시간 데이터베이스 연결
+// ==========================================
+
+const schedulerRef = db.ref('scheduler_clean_data');
+
+// Firebase 연결 및 데이터 읽기
+schedulerRef.on(
+    'value',
+    (snapshot) => {
+        const data = snapshot.val();
+
+        if (data) {
+            categories = Array.isArray(data.categories)
+                ? data.categories
+                : categories;
+
+            schedules = data.schedules || {};
+        } else {
+            schedules = {};
+        }
+
+        renderCalendar();
+        renderTable();
+        updateStats();
+        updateCategorySelect();
+
+        console.log('Firebase 데이터 불러오기 성공!');
+    },
+    (error) => {
+        console.error('Firebase 읽기 오류:', error);
+        alert(
+            'Firebase 데이터 읽기에 실패했습니다.\n' +
+            error.message
+        );
+    }
+);
+
+// Firebase 데이터 저장
+async function saveData() {
+    try {
+        await schedulerRef.set({
+            categories: categories,
+            schedules: schedules
         });
 
-        function saveData() {
-            db.ref('scheduler_clean_data').set({
-                categories: categories,
-                schedules: schedules
-            });
-        }
+        console.log('Firebase 저장 성공!');
 
-        function changeMonth(dir) {
-            currentMonth += dir;
-            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-            else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-            renderCalendar();
-        }
+        renderCalendar();
+        renderTable();
+        updateStats();
+        updateCategorySelect();
 
-        function goToToday() {
-            const now = new Date();
-            currentYear = now.getFullYear();
-            currentMonth = now.getMonth();
-            renderCalendar();
-        }
+        return true;
 
-        function setFilter(filterType) {
-            currentFilter = filterType;
-            const badge = document.getElementById('active-filter-badge');
-            const badgeText = document.getElementById('filter-badge-text');
+    } catch (error) {
+        console.error('Firebase 저장 실패:', error);
 
-            if (filterType === 'all') {
-                badge.classList.add('hidden');
-                badge.classList.remove('flex');
-            } else {
-                badge.classList.remove('hidden');
-                badge.classList.add('flex');
-                badgeText.innerText = filterType === 'completed' ? '발송 완료 필터 적용 중' : '발송 대기 필터 적용 중';
-            }
-            renderTable();
-            renderCalendar();
-        }
+        alert(
+            '데이터 저장에 실패했습니다.\n\n' +
+            error.message
+        );
 
-        function getSchedulesArray() {
-            return Object.values(schedules).filter(s => s != null);
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            const title = document.getElementById('calendar-title');
-            if(!grid || !title) return;
-            
-            grid.innerHTML = '';
-            title.innerText = `${currentYear}년 ${currentMonth + 1}월`;
-
-            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-            const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            const realToday = new Date();
-            const todayStr = `${realToday.getFullYear()}-${String(realToday.getMonth() + 1).padStart(2, '0')}-${String(realToday.getDate()).padStart(2, '0')}`;
-
-            for (let i = 0; i < firstDayIndex; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'bg-slate-100/50 min-h-[90px] sm:min-h-[120px] p-1.5 sm:p-2 rounded-2xl opacity-30';
-                grid.appendChild(empty);
-            }
-
-            const scheduleList = getSchedulesArray();
-
-            for (let day = 1; day <= lastDay; day++) {
-                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const isToday = (dateStr === todayStr);
-
-                const cell = document.createElement('div');
-                cell.className = `min-h-[90px] sm:min-h-[120px] p-1.5 sm:p-2 flex flex-col justify-between transition rounded-2xl ${isToday ? 'bg-indigo-50/60 border-2 border-indigo-500 z-10 shadow-sm' : 'bg-white hover:bg-slate-50/80 border border-slate-100'}`;
-
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'flex justify-between items-center mb-1';
-                
-                const dayText = document.createElement('span');
-                dayText.className = `text-[11px] sm:text-xs font-bold ${isToday ? 'text-indigo-600' : 'text-slate-400'}`;
-                dayText.innerText = `${day}일`;
-                dayHeader.appendChild(dayText);
-
-                if (isToday) {
-                    const todayBadge = document.createElement('span');
-                    todayBadge.className = 'text-[9px] sm:text-[10px] px-1 py-0.5 bg-indigo-600 text-white font-bold rounded-md';
-                    todayBadge.innerText = '오늘';
-                    dayHeader.appendChild(todayBadge);
-                }
-
-                cell.appendChild(dayHeader);
-
-                // 달력 날짜 매칭 (시작일 ~ 종료일 범위 내에 포함되는지 확인)
-                const daySchedules = scheduleList.filter(s => {
-                    if (!s || !s.date) return false;
-                    const start = s.date;
-                    const end = s.endDate || s.date;
-                    return dateStr >= start && dateStr <= end;
-                });
-
-                const list = document.createElement('div');
-                list.className = 'space-y-1 overflow-y-auto flex-1';
-
-                daySchedules.forEach(item => {
-                    if (currentFilter === 'completed' && !item.completed) return;
-                    if (currentFilter === 'pending' && item.completed) return;
-
-                    const badge = document.createElement('div');
-                    let color = 'bg-indigo-50 text-indigo-600 border-indigo-100';
-                    if (item.type && item.type.includes('개강')) color = 'bg-rose-50 text-rose-600 border-rose-100';
-                    if (item.type && (item.type.includes('마감') || item.type.includes('시험'))) color = 'bg-amber-50 text-amber-600 border-amber-100';
-
-                    const targetLabel = item.target === '미참여자' ? '[미참여자]' : '[전체]';
-                    const periodLabel = (item.endDate && item.endDate !== item.date) ? ` (${item.date.slice(5)}~${item.endDate.slice(5)})` : '';
-
-                    badge.className = `text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-xl font-semibold border cursor-pointer truncate transition hover:scale-[0.98] ${color} ${item.completed ? 'completed-item' : ''}`;
-                    badge.innerText = `${item.completed ? '✅' : '⏳'} ${targetLabel} [${item.type}] ${item.content}${periodLabel}`;
-                    badge.onclick = (e) => {
-                        e.stopPropagation();
-                        toggleComplete(item.id);
-                    };
-                    list.appendChild(badge);
-                });
-
-                cell.appendChild(list);
-                grid.appendChild(cell);
-            }
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('schedule-table-body');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-
-            let filtered = getSchedulesArray();
-            if (currentFilter === 'completed') filtered = filtered.filter(s => s.completed);
-            if (currentFilter === 'pending') filtered = filtered.filter(s => !s.completed);
-
-            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 text-xs font-medium">등록된 일정이 없습니다.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = `hover:bg-slate-50/80 transition ${item.completed ? 'bg-slate-50/40' : ''}`;
-                
-                const targetTag = item.target === '미참여자' 
-                    ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-amber-50 text-amber-600 font-bold border border-amber-200">🎯 미참여자</span>`
-                    : `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-indigo-50 text-indigo-600 font-bold border border-indigo-200">📢 전체</span>`;
-
-                const displayDate = (item.endDate && item.endDate !== item.date) ? `${item.date} ~ ${item.endDate}` : item.date;
-
-                tr.innerHTML = `
-                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-semibold text-slate-700 text-xs">${displayDate}</td>
-                    <td class="py-3 sm:py-4 px-3 sm:px-4"><span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] rounded-lg bg-slate-100 text-slate-600 font-bold">${item.type}</span></td>
-                    <td class="py-3 sm:py-4 px-3 sm:px-4">${targetTag}</td>
-                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-medium ${item.completed ? 'line-through text-slate-300' : 'text-slate-800'}">${item.content}</td>
-                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-center">
-                        <button onclick="toggleComplete('${item.id}')" class="px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs rounded-xl font-bold transition active:scale-95 ${item.completed ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}">
-                            ${item.completed ? '발송 완료 ✅' : '발송 대기 ⏳'}
-                        </button>
-                    </td>
-                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-center space-x-2">
-                        <button onclick="openEditModal('${item.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold">수정</button>
-                        <button onclick="deleteSchedule('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs font-bold">삭제</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function updateStats() {
-            const valid = getSchedulesArray();
-            document.getElementById('stat-total').innerText = `${valid.length}건`;
-            document.getElementById('stat-completed').innerText = `${valid.filter(s => s.completed).length}건`;
-            document.getElementById('stat-pending').innerText = `${valid.filter(s => !s.completed).length}건`;
-        }
-
-        function toggleComplete(id) {
-            if (schedules[id]) {
-                schedules[id].completed = !schedules[id].completed;
-                saveData();
-            }
-        }
+        return false;
+    }
+}
 
         function updateCategorySelect() {
             const select = document.getElementById('schedule-type');
