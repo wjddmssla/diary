@@ -193,6 +193,7 @@
                         <select id="schedule-target" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-3 sm:px-4 py-3 text-xs sm:text-sm focus:bg-white focus:border-indigo-500 outline-none transition font-bold text-indigo-600">
                             <option value="전체">📢 전체</option>
                             <option value="미참여자">🎯 미참여자</option>
+                            <option value="교수님">🎯 교수님</option>
                         </select>
                     </div>
                 </div>
@@ -919,7 +920,7 @@
                         date: date,
                         endDate: endDate || date,
                         type: categories.includes(type) ? type : '수강일정',
-                        target: target.includes('미참') ? '미참여자' : '전체',
+                        target: target.includes('미참') ? '미참여자' : target.includes('교수') ? '교수님' : '전체',
                         content: content,
                         completed: false
                     };
@@ -997,6 +998,7 @@
                 <select class="batch-target w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5">
                     <option value="전체">전체</option>
                     <option value="미참여자">미참여자</option>
+                    <option value="교수님">교수님</option>
                 </select>
             </td>
 
